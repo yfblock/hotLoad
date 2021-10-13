@@ -1,0 +1,4 @@
+rootProject.name = 'Test1'
+
+include ":yfHotLoad"
+project(":yfHotLoad").projectDir = new File(rootDir, "../yfHotLoad/")
