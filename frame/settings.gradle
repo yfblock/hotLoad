@@ -1,4 +1,4 @@
-rootProject.name = 'Test1'
+rootProject.name = 'frame'
 
 //include ":yfHotLoad"
 //project(":yfHotLoad").projectDir = new File(rootDir, "../yfHotLoad/")

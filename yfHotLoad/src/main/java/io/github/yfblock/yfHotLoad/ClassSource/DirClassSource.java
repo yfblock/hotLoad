@@ -31,6 +31,21 @@ public class DirClassSource implements ClassSource{
         }
     }
 
+    public DirClassSource(ClassLoader classLoader) {
+        this(classLoader, "");
+    }
+
+    public DirClassSource(ClassLoader classLoader, String packageName) {
+        this.dirPath = "";
+        this.packageName = packageName;
+        try {
+            this.classLoader = classLoader;
+            this.loadClasses();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public Collection<Class<?>> getClasses() {
         return this.classesMap.values();

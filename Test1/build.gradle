@@ -10,5 +10,4 @@ repositories {
 }
 
 dependencies {
-    implementation project(':yfHotLoad')
 }
