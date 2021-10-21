@@ -3,34 +3,38 @@ package io.github.yfblock.frame.Controller;
 import io.github.yfblock.frame.Annotations.Controller;
 import io.github.yfblock.frame.Annotations.RequestMapping;
 import io.github.yfblock.frame.Annotations.RequestParam;
+import io.github.yfblock.frame.Core.Constant.AttributeParams;
 import io.github.yfblock.frame.Core.ModelController;
 import io.github.yfblock.frame.Core.Template.Template;
 import io.github.yfblock.frame.utils.TemplateUtil;
 import io.github.yfblock.yfHotLoad.Utils.FileUtil;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RequestMapping("/super-admin")
 @Controller
-public class SuperAdminController extends ModelController {
+public class SuperAdminController{
     public Template login() {
         return TemplateUtil.build("templates/login.ftl");
     }
 
+    @RequestMapping("/index")
     public Template index() {
         return TemplateUtil.build("templates/index.ftl");
     }
 
+    @RequestMapping("/modules")
     public Template modules() {
         return TemplateUtil.build("templates/modules.ftl");
     }
 
     @SuppressWarnings("unchecked")
     @RequestMapping("/module_list")
-    public Map<String, Object> getModules() {
+    public Map<String, Object> getModules(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
-        String[] jarFiles = FileUtil.getAllJarFiles((String) request.getAttribute("jarLibPath"));
-        Map<String, String> jarMounted = (Map<String, String>) request.getAttribute("jarMounted");
+        String[] jarFiles = FileUtil.getAllJarFiles((String) request.getAttribute(AttributeParams.JAR_LIB_PATH));
+        Map<String, String> jarMounted = (Map<String, String>) request.getAttribute(AttributeParams.MODULE_MOUNTED_MAP);
         Set<String> jarMountedNames = jarMounted.keySet();;
         ArrayList<Map<String, Object>> data = new ArrayList<>();
         for(String jarFile : jarFiles) {
@@ -47,7 +51,7 @@ public class SuperAdminController extends ModelController {
     }
 
     @RequestMapping("/mount_module")
-    public Map<String, Object> mountModule(@RequestParam(value = "module_name", required = true) String moduleName) {
+    public Map<String, Object> mountModule(HttpServletRequest request, @RequestParam(value = "module_name", required = true) String moduleName) {
         request.setAttribute("mountModule", moduleName);
         Map<String, Object> result = new HashMap<>();
         result.put("code", 0);
@@ -56,7 +60,7 @@ public class SuperAdminController extends ModelController {
     }
 
     @RequestMapping("/unmount_module")
-    public Map<String, Object> unmountModule(@RequestParam(value = "module_name", required = true) String moduleName) {
+    public Map<String, Object> unmountModule(HttpServletRequest request, @RequestParam(value = "module_name", required = true) String moduleName) {
         request.setAttribute("unmountModule", moduleName);
         Map<String, Object> result = new HashMap<>();
         result.put("code", 0);
@@ -64,6 +68,7 @@ public class SuperAdminController extends ModelController {
         return result;
     }
 
+    @RequestMapping("/init")
     public Map<String, Object> init() {
         Map<String, Object> result = new HashMap<>();
         Map<String, String> homeInfo = new HashMap<>();

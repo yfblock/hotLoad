@@ -1,19 +1,19 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group 'io.github.yfblock'
-version '1.0-SNAPSHOT'
+version '1.0'
+
+ext {
+    gitUrl  = 'https://github.com/yfblock/hotLoad'
+}
 
 repositories {
     mavenCentral()
 }
-
-//dependencies {
-//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-//}
-
 
 // 设置多版本兼容
 sourceSets {
@@ -43,11 +43,6 @@ compileJava {
 
 // 多版本之一11编译
 compileJava11Java {
-    options.compilerArgs << '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED' <<
-            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' <<
-            '--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED' <<
-            '--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED'
-
     sourceCompatibility '11'
     targetCompatibility '11'
 }
@@ -66,7 +61,76 @@ jar {
     }
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+javadoc {
+    options.addStringOption("charset", "UTF-8")
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
 
 test {
     useJUnitPlatform()
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = rootProject.name
+            version = rootProject.version
+            from components.java
+            pom {
+                name = rootProject.name
+                description = 'hot load'
+                packaging = 'jar'
+                url = project.ext.gitUrl
+                properties = [
+                        myProp: "value",
+                        "prop.with.dots": "anotherValue"
+                ]
+                licenses {
+                    license {
+                        name = 'GPL-2.0'
+                        url = 'https://gitee.com/yfblock/hotLoad/raw/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'yufeng'
+                        name = 'yufeng'
+                        email = '321353225@qq.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git@github.com:yfblock/hotLoad.git'
+                    developerConnection = 'scm:git:ssh://github.com/yfblock/hotLoad.git'
+                    url = project.ext.gitUrl
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            if (project.version.toString().endsWith("-SNAPSHOT")) {
+                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+            }
+            credentials {
+                username = ossrhUsername
+                password = ossrhPassword
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

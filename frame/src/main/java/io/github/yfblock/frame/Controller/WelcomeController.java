@@ -3,15 +3,21 @@ package io.github.yfblock.frame.Controller;
 import io.github.yfblock.frame.Annotations.Controller;
 import io.github.yfblock.frame.Annotations.RequestMapping;
 import io.github.yfblock.frame.Annotations.RequestParam;
+import io.github.yfblock.frame.Core.Analyzer.UrlTreeNode;
 import io.github.yfblock.frame.Core.ModelController;
 import io.github.yfblock.frame.Core.Template.Template;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
 @RequestMapping("/home")
 @Controller
-public class WelcomeController extends ModelController {
+public class WelcomeController {
+
+    @Autowired
+    public UrlTreeNode urlTreeNode;
 
     @RequestMapping("/index")
     public Template login(@RequestParam("custom") String name,
@@ -24,5 +30,11 @@ public class WelcomeController extends ModelController {
         template.setPath("test.ftl");
         template.setData(data);
         return template;
+    }
+
+    @RequestMapping("/test")
+    public String test(HttpServletRequest request) {
+        System.out.println(request);
+        return this.urlTreeNode.toString();
     }
 }
