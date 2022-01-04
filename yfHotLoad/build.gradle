@@ -2,10 +2,11 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'signing'
+    id 'idea'
 }
 
 group 'io.github.yfblock'
-version '1.0'
+version '1.2'
 
 ext {
     gitUrl  = 'https://github.com/yfblock/hotLoad'
@@ -25,12 +26,12 @@ sourceSets {
 }
 
 dependencies {
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    testImplementation 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
     java11Implementation files(sourceSets.main.output.classesDirs) { builtBy compileJava }
 }
@@ -55,8 +56,8 @@ jar {
 
     manifest {
         attributes(
-                "Manifest-Version": "1.0",
-                "Multi-Release": true
+            "Manifest-Version": "1.0",
+            "Multi-Release": true
         )
     }
 }
@@ -91,8 +92,8 @@ publishing {
                 packaging = 'jar'
                 url = project.ext.gitUrl
                 properties = [
-                        myProp: "value",
-                        "prop.with.dots": "anotherValue"
+                    myProp: "value",
+                    "prop.with.dots": "anotherValue"
                 ]
                 licenses {
                     license {
@@ -133,4 +134,12 @@ publishing {
 
 signing {
     sign publishing.publications.mavenJava
+}
+
+idea{
+    module{
+        inheritOutputDirs = false
+        outputDir = compileJava.destinationDir
+        testOutputDir = compileTestJava.destinationDir
+    }
 }

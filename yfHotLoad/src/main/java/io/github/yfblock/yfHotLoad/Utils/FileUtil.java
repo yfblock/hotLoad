@@ -51,10 +51,9 @@ public class FileUtil {
      * @param loader classLoad
      * @param className 类名称
      * @return class对象
-     * @throws MalformedURLException MalformedURLException
      * @throws ClassNotFoundException ClassNotFoundException
      */
-    public static Class<?> loadClass(ClassLoader loader, String className) throws MalformedURLException, ClassNotFoundException {
+    public static Class<?> loadClass(ClassLoader loader, String className) throws ClassNotFoundException {
         return loader.loadClass(className);
     }
 }

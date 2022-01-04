@@ -1,0 +1,36 @@
+plugins {
+    id 'war'
+    id 'java'
+}
+
+group 'io.github.yfblock'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":frame-mvc")
+
+    implementation 'org.springframework:spring-core:5.3.14'
+    implementation 'org.springframework:spring-context:5.3.14'
+
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
+
+    implementation 'org.freemarker:freemarker:2.3.31'
+
+    implementation 'commons-fileupload:commons-fileupload:1.4'
+    implementation 'commons-io:commons-io:20030203.000550'
+
+    implementation 'io.github.yfblock:yfHotLoad:1.2'
+
+    testImplementation 'junit:junit:4.11'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}

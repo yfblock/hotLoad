@@ -12,7 +12,9 @@ public class JSONUtil {
         StringBuilder targetString;
         if (classType.equals(void.class)) {
             targetString = new StringBuilder();
-        } else if (classType.equals(String.class)) {
+        } else if(classType.isEnum()) {
+            targetString = new StringBuilder("\"").append(obj).append('"');
+        }else if (classType.equals(String.class)) {
             targetString = new StringBuilder("\"").append((String) obj).append('"');
         } else if (classType.equals(int.class) || classType.equals(double.class) || classType.equals(float.class) ||
                 classType.equals(Integer.class) || classType.equals(Double.class) || classType.equals(Float.class) ) {

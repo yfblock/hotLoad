@@ -1,0 +1,4 @@
+rootProject.name = 'frame-mvc-demo'
+
+include ':frame-mvc'
+project(':frame-mvc').projectDir = new File(settingsDir, '../frame-mvc')

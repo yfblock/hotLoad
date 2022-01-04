@@ -6,11 +6,13 @@ import io.github.yfblock.frame.Core.Template.Template;
 import io.github.yfblock.frame.Core.Template.TemplateHandler;
 import io.github.yfblock.frame.Exceptions.ParamNotFoundException;
 import io.github.yfblock.frame.utils.JSONUtil;
+import io.github.yfblock.frame.utils.ModelOperator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -62,6 +64,9 @@ public class AbstractServlet extends HttpServlet {
         // 判断请求类型
         if(parameter.getType().equals(HttpServletRequest.class) || parameter.getType().equals(ServletRequest.class))
             return this.request;
+        if(parameter.getType().equals(HttpServletResponse.class) || parameter.getType().equals(ServletResponse.class))
+            return this.response;
+
         // 获取请求参数
         String resultString;
         RequestParam requestParam = parameter.getAnnotation(RequestParam.class);

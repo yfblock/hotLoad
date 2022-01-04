@@ -1,16 +1,19 @@
 package io.github.yfblock.frame.Core.Servlet;
 
+import freemarker.template.TemplateException;
 import io.github.yfblock.frame.Annotations.Controller;
 import io.github.yfblock.frame.Annotations.RequestMapping;
 import io.github.yfblock.frame.Core.Analyzer.UrlTreeNode;
 import io.github.yfblock.frame.Core.Analyzer.UrlTreeNodeType;
 import io.github.yfblock.frame.Core.Constant.AttributeParams;
 import io.github.yfblock.frame.Core.ModelController;
+import io.github.yfblock.frame.utils.ModelOperator;
 import io.github.yfblock.frame.utils.ModulePropertiesUtil;
 import io.github.yfblock.yfHotLoad.ClassSource.DirClassSource;
 import io.github.yfblock.yfHotLoad.ClassSource.JarClassSource;
 import io.github.yfblock.yfHotLoad.HotLoader;
 import io.github.yfblock.yfHotLoad.Utils.FileUtil;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -20,7 +23,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 public class MultiModuleServlet extends AbstractServlet {
@@ -44,12 +49,10 @@ public class MultiModuleServlet extends AbstractServlet {
         String rootPath =
                 Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("")).getPath();
         if (rootPath != null)
-            jarLibPath = rootPath + "../../../../extra/";           // 额外的jar包的路径
-
+            jarLibPath = rootPath + "../extra/";           // 额外的jar包的路径
         this.loadNativeClasses();
         this.loadExternalModules();
         this.context.refresh();
-        System.out.println(Arrays.toString(this.context.getBeanDefinitionNames()));
     }
 
     @Override
@@ -81,13 +84,36 @@ public class MultiModuleServlet extends AbstractServlet {
         // Jar包分析器对Jar包进行分析
         this.rootUrlTreeNode.getChildren().add(this.handleHotLoader(hotLoader, extraUrl));
 
-        // -----------------预留功能 需要对jar包内的css、js、图片等静态资源进行解压------------
+        // -----------预留功能 需要对jar包内的css、js、图片等静态资源进行解压或者代理----------
         // 实现代码
+
 
         // 加入到已挂载模块中
         jarMounted.put(jarName, extraUrl);
     }
 
+    /**
+     * 单个模块卸载
+     * @param jarName 模块名称
+     * @param extraUrl 模块url
+     */
+    public void unloadSingleExternClasses(String jarName, String extraUrl) {
+        // 初始化extraUrl
+        extraUrl = extraUrl.toLowerCase(Locale.ROOT);
+        // 包卸载 遍历方式找到要卸载的模块 然后进行卸载
+        for(UrlTreeNode moduleNode : this.rootUrlTreeNode.getChildren()) {
+            if(extraUrl.equals(moduleNode.getUrl())) {
+                this.rootUrlTreeNode.getChildren().remove(moduleNode);
+                break;
+            }
+        }
+
+        // -----------------预留功能 需要对jar包内的css、js、图片等静态资源进行删除------------
+        // 实现代码
+
+        // 加入到已挂载模块中
+        jarMounted.remove(jarName);
+    }
 
     /**
      * 加载外部的控制器类
@@ -107,6 +133,20 @@ public class MultiModuleServlet extends AbstractServlet {
         System.out.println("------------------加载外部控制器加载完毕--------------------------");
     }
 
+
+    @Override
+    protected Object buildParameter(Parameter parameter) {
+        try{
+            Object obj =  this.context.getBean(parameter.getType());
+            if(obj.getClass().equals(ModelOperator.class))
+                ((ModelOperator)obj).initRequestAndResponse(request, response);
+            return obj;
+        } catch (BeansException ignored) {
+
+        }
+
+        return super.buildParameter(parameter);
+    }
 
     protected UrlTreeNode handleHotLoader(HotLoader hotLoader, String extraUrl) {
         // 加载Beans
@@ -167,16 +207,28 @@ public class MultiModuleServlet extends AbstractServlet {
 
     public UrlTreeNode getMatchMethod() {
         String url = this.requestUrl;
+        if (url.equals("/")) url = "";
+        // 遍历模块url
         for (UrlTreeNode urlTreeNode : this.rootUrlTreeNode.getChildren()) {
             String currUrl = urlTreeNode.getUrl().equals("/") ? "" : urlTreeNode.getUrl();
             if (url.indexOf(currUrl) != 0) continue;
-            for (UrlTreeNode conTreeNode : urlTreeNode.getChildren()) {
-                String connUrl = conTreeNode.getUrl().equals("/") ? currUrl : currUrl + conTreeNode.getUrl();
+            // 如果模块url匹配， 遍历控制器url
+            for (UrlTreeNode controllerTreeNode : urlTreeNode.getChildren()) {
+                String connUrl = controllerTreeNode.getUrl().equals("/") ? currUrl : currUrl + controllerTreeNode.getUrl();
                 if (url.indexOf(connUrl) != 0) continue;
-                for (UrlTreeNode methodNode : conTreeNode.getChildren()) {
+                // 如果控制器url匹配，遍历方法url
+                for (UrlTreeNode methodNode : controllerTreeNode.getChildren()) {
                     String methodUrl = methodNode.getUrl().equals("/") ? connUrl : connUrl + methodNode.getUrl();
                     if (methodUrl.equals(url))
                         return methodNode;
+                    if (methodUrl.endsWith("*")) {
+                        methodUrl = methodUrl.substring(0, methodUrl.lastIndexOf("*"));
+                        if(url.indexOf(methodUrl) == 0){
+                            this.request.setAttribute(AttributeParams.extraPathInfo,
+                                    request.getServletPath().substring(methodUrl.length()));
+                            return methodNode;
+                        }
+                    }
                 }
             }
         }

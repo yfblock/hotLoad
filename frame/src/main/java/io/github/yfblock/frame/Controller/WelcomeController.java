@@ -6,18 +6,27 @@ import io.github.yfblock.frame.Annotations.RequestParam;
 import io.github.yfblock.frame.Core.Analyzer.UrlTreeNode;
 import io.github.yfblock.frame.Core.ModelController;
 import io.github.yfblock.frame.Core.Template.Template;
+import io.github.yfblock.frame.utils.ModelOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestMapping("/home")
 @Controller
+@RequestMapping("/home")
 public class WelcomeController {
 
     @Autowired
     public UrlTreeNode urlTreeNode;
+
+    @RequestMapping("/")
+    public void index(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getRequestDispatcher("/index").forward(request, response);
+    }
 
     @RequestMapping("/index")
     public Template login(@RequestParam("custom") String name,
@@ -33,8 +42,8 @@ public class WelcomeController {
     }
 
     @RequestMapping("/test")
-    public String test(HttpServletRequest request) {
-        System.out.println(request);
-        return this.urlTreeNode.toString();
+    public UrlTreeNode test(ModelOperator modelOperator) {
+        System.out.println(modelOperator);
+        return this.urlTreeNode;
     }
 }

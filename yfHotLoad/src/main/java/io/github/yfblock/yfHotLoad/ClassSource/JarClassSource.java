@@ -1,47 +1,48 @@
 package io.github.yfblock.yfHotLoad.ClassSource;
 
 
-import lombok.SneakyThrows;
-
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class JarClassSource implements ClassSource{
+/**
+ * Jar包形式的类来源
+ */
+public class JarClassSource extends BaseClassSource{
 
-    private final String jarPath;
-    private final String packageName;
-    private ClassLoader classLoader;
-    private Map<String, Class<?>> classesMap = new HashMap<>();
+    private final String jarPath;       // jar包路径
+    private final String packageName;   // 要获取的包名称
 
     public JarClassSource(String jarPath) {
         this(jarPath, "");
     }
 
+    /**
+     * 构造函数
+     * @param jarPath jar包路径
+     * @param packageName 要加载的包名称
+     */
     public JarClassSource(String jarPath, String packageName) {
         this.jarPath        = jarPath;
         this.packageName    = packageName;
         try {
             URL fileURL = new File(jarPath).toURI().toURL();
-            classLoader = new URLClassLoader(new URL[]{fileURL}, Thread.currentThread().getContextClassLoader());
+            this.classLoader = new URLClassLoader(new URL[]{fileURL}, Thread.currentThread().getContextClassLoader());
             this.loadClasses();
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public Collection<Class<?>> getClasses() {
-        return this.classesMap.values();
-    }
-
+    /**
+     * 读取类
+     * @throws IOException  读写异常
+     * @throws ClassNotFoundException 未找到类异常
+     */
     public void loadClasses() throws IOException, ClassNotFoundException {
         String packagePath = packageName.replaceAll("\\.", "/");
         JarFile jarFile = new JarFile(this.jarPath);
@@ -52,7 +53,6 @@ public class JarClassSource implements ClassSource{
             {
                 String className = jarEntry.getName().substring(0, jarEntry.getName().lastIndexOf(".class"))
                         .replaceAll("/", "\\.");
-//                System.out.println(className);
                 Class<?> cls = this.classLoader.loadClass(className);
                 classesMap.put(className, cls);
             }

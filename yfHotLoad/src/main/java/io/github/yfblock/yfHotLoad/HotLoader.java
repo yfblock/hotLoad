@@ -126,6 +126,35 @@ public class HotLoader {
     }
 
     /**
+     * get all interface
+     * @return interface list
+     */
+    public List<Class<?>> getInterfaces() {
+        ArrayList<Class<?>> interfaces = new ArrayList<>();
+        for(Class<?> clz : this.classes) {
+            if(clz.isInterface()) {
+                interfaces.add(clz);
+            }
+        }
+        return interfaces;
+    }
+
+    /**
+     * get interfaces from source by packageName
+     * @param packageName the name of package which you want to get
+     * @return the list of interfaces
+     */
+    public List<Class<?>> getInterfacesByPackage(String packageName) {
+        ArrayList<Class<?>> interfaces = new ArrayList<>();
+        for(Class<?> clz : this.classes) {
+            if(clz.getName().indexOf(packageName) == 0) {
+                interfaces.add(clz);
+            }
+        }
+        return interfaces;
+    }
+
+    /**
      * judge the targetClass whether is the parent of sourceClass
      * @param sourceClass the class to judge
      * @param targetClass the class to compare
